@@ -94,6 +94,19 @@ tags: []
 """
   writeFresh(projectDir / "snippets" / (slug & ".md"), body)
 
+proc newWorld*(projectDir, title: string): int =
+  let slug = slugify(title)
+  if slug.len == 0:
+    stderr.writeLine("scri world new: title produces an empty slug")
+    return 2
+  let body = &"""---
+title: {title}
+---
+# {title}
+
+"""
+  writeFresh(projectDir / "world" / (slug & ".md"), body)
+
 proc nextChapterNum*(bookDir: string): int =
   ## One past the highest NN- prefix in bookDir (default 1 if empty).
   result = 1

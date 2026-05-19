@@ -42,6 +42,14 @@ tags: []
 Reusable bit.
 """
 
+  worldStub = """---
+title: Example world note
+---
+# Example world note
+
+Setting notes go here.
+"""
+
 proc isEffectivelyEmpty(dir: string): bool =
   for _, _ in walkDir(dir):
     return false
@@ -69,7 +77,7 @@ proc initProject*(dir: string, useTemplate: bool): int =
     return 1
 
   createDir(dir)
-  for sub in ["characters", "timeline", "book", "snippets"]:
+  for sub in ["characters", "timeline", "book", "snippets", "world"]:
     createDir(dir / sub)
 
   if useTemplate:
@@ -77,6 +85,7 @@ proc initProject*(dir: string, useTemplate: bool): int =
     writeIfMissing(dir / "timeline" / "2025-01-01-example.md", timelineStub)
     writeIfMissing(dir / "book" / "01-example.md", bookStub)
     writeIfMissing(dir / "snippets" / "example.md", snippetsStub)
+    writeIfMissing(dir / "world" / "example.md", worldStub)
 
   echo &"scri: initialized project at {dir}"
   return 0

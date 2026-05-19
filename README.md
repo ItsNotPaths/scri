@@ -18,6 +18,7 @@ scri outline [<dir>]                        chapter list with word counts
 scri character new <name>                   inject a character md
 scri timeline  new <YYYY-MM-DD> <summary>   inject a timeline event md
 scri snippet   new <title>                  inject a snippet md
+scri world     new <title>                  inject a world note md
 scri book      new <title>                  inject the next chapter md
 ```
 
@@ -28,7 +29,8 @@ my-novel/
 ├── characters/   # slug.md
 ├── timeline/     # YYYY-MM-DD-slug.md
 ├── book/         # NN-slug.md
-└── snippets/     # slug.md
+├── snippets/     # slug.md
+└── world/        # slug.md
 ```
 
 ## License

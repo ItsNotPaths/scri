@@ -6,6 +6,7 @@
 ##   scri character new <name>                   inject a character md
 ##   scri timeline  new <YYYY-MM-DD> <summary>   inject a timeline event md
 ##   scri snippet   new <title>                  inject a snippet md
+##   scri world     new <title>                  inject a world note md
 ##   scri book      new <title>                  inject the next chapter md
 
 import std/[os, strformat, strutils]
@@ -20,6 +21,7 @@ proc usage() =
   stderr.writeLine("  scri character new <name>                   inject a character md")
   stderr.writeLine("  scri timeline  new <YYYY-MM-DD> <summary>   inject a timeline event md")
   stderr.writeLine("  scri snippet   new <title>                  inject a snippet md")
+  stderr.writeLine("  scri world     new <title>                  inject a world note md")
   stderr.writeLine("  scri book      new <title>                  inject the next chapter md")
 
 proc runInit(args: openArray[string]): int =
@@ -97,6 +99,20 @@ proc runSnippet(args: openArray[string]): int =
     stderr.writeLine(&"scri snippet: unknown subcommand: {args[0]}")
     2
 
+proc runWorld(args: openArray[string]): int =
+  if args.len == 0:
+    stderr.writeLine("usage: scri world new <title>")
+    return 2
+  case args[0]
+  of "new":
+    if args.len != 2:
+      stderr.writeLine("usage: scri world new <title>")
+      return 2
+    newWorld(".", args[1])
+  else:
+    stderr.writeLine(&"scri world: unknown subcommand: {args[0]}")
+    2
+
 proc runBook(args: openArray[string]): int =
   if args.len == 0:
     stderr.writeLine("usage: scri book new <title>")
@@ -123,6 +139,7 @@ when isMainModule:
   of "character": quit(runCharacter(args[1..^1]))
   of "timeline":  quit(runTimeline(args[1..^1]))
   of "snippet":   quit(runSnippet(args[1..^1]))
+  of "world":     quit(runWorld(args[1..^1]))
   of "book":      quit(runBook(args[1..^1]))
   of "-h", "--help":
     usage()
