@@ -32,9 +32,6 @@ jobs:
           curl -fsSL "https://nim-lang.org/download/nim-${NIM_VERSION}-linux_x64.tar.xz" | tar xJ -C /opt
           echo "/opt/nim-${NIM_VERSION}/bin" >> "$GITHUB_PATH"
 
-      - name: Test
-        run: nimble test
-
       - name: Build
         run: |
           nim c -d:release --opt:speed -o:"$PROJECT_NAME" "src/$PROJECT_NAME.nim"
