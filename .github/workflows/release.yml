@@ -19,19 +19,21 @@ on:
 
 env:
   PROJECT_NAME: scri
+  NIM_VERSION: 2.2.4
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    # TODO: if you need an older glibc floor, switch to a container like:
-    #   container: ubuntu:20.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Install toolchain
         run: |
-          curl -fsSL https://nim-lang.org/download/nim-2.2.4-linux_x64.tar.xz | tar xJ -C /opt
-          echo /opt/nim-2.2.4/bin >> $GITHUB_PATH
+          curl -fsSL "https://nim-lang.org/download/nim-${NIM_VERSION}-linux_x64.tar.xz" | tar xJ -C /opt
+          echo "/opt/nim-${NIM_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Test
+        run: nimble test
 
       - name: Build
         run: |
@@ -41,11 +43,9 @@ jobs:
       - name: Stage artifacts
         run: |
           mkdir -p dist
-          # TODO: copy the files you want in the linux release into dist/
-          [ -f "$PROJECT_NAME" ] && cp "$PROJECT_NAME" dist/ || true
-          [ -d dist-stage ] && cp -r dist-stage/. dist/ || true
+          cp "$PROJECT_NAME" dist/
           [ -f README.md ] && cp README.md dist/ || true
-          [ -f LICENSE ] && cp LICENSE dist/ || true
+          [ -f LICENSE ]   && cp LICENSE   dist/ || true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -61,8 +61,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y mingw-w64
-          curl -fsSL https://nim-lang.org/download/nim-2.2.4-linux_x64.tar.xz | tar xJ -C /opt
-          echo /opt/nim-2.2.4/bin >> $GITHUB_PATH
+          curl -fsSL "https://nim-lang.org/download/nim-${NIM_VERSION}-linux_x64.tar.xz" | tar xJ -C /opt
+          echo "/opt/nim-${NIM_VERSION}/bin" >> "$GITHUB_PATH"
 
       - name: Build
         run: |
@@ -70,15 +70,14 @@ jobs:
               --gcc.exe:x86_64-w64-mingw32-gcc \
               --gcc.linkerexe:x86_64-w64-mingw32-gcc \
               -o:"$PROJECT_NAME.exe" "src/$PROJECT_NAME.nim"
+          x86_64-w64-mingw32-strip --strip-all "$PROJECT_NAME.exe"
 
       - name: Stage artifacts
         run: |
           mkdir -p dist
-          # TODO: copy the files you want in the windows release into dist/
-          [ -f "${PROJECT_NAME}.exe" ] && cp "${PROJECT_NAME}.exe" dist/ || true
-          [ -d dist-stage ] && cp -r dist-stage/. dist/ || true
+          cp "${PROJECT_NAME}.exe" dist/
           [ -f README.md ] && cp README.md dist/ || true
-          [ -f LICENSE ] && cp LICENSE dist/ || true
+          [ -f LICENSE ]   && cp LICENSE   dist/ || true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -103,20 +102,23 @@ jobs:
 
       - name: Package
         run: |
-          (cd linux-zip && zip -r "../${PROJECT_NAME}-linux.zip" .)
+          (cd linux-zip   && zip -r "../${PROJECT_NAME}-linux.zip"   .)
           (cd windows-zip && zip -r "../${PROJECT_NAME}-windows.zip" .)
 
       - name: Create release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN:   ${{ github.token }}
+          VERSION:    ${{ inputs.version }}
+          NOTES:      ${{ inputs.notes }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
-          PRERELEASE_FLAG=""
-          if [ "${{ inputs.prerelease }}" = "true" ]; then
-            PRERELEASE_FLAG="--prerelease"
+          flags=()
+          if [ "$PRERELEASE" = "true" ]; then
+            flags+=(--prerelease)
           fi
-          gh release create "${{ inputs.version }}" \
+          gh release create "$VERSION" \
               "${PROJECT_NAME}-linux.zip" \
               "${PROJECT_NAME}-windows.zip" \
-              --title "${{ inputs.version }}" \
-              --notes "${{ inputs.notes }}" \
-              $PRERELEASE_FLAG
+              --title "$VERSION" \
+              --notes "$NOTES" \
+              "${flags[@]}"
